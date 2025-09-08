@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>רשימת בדיקה - השכרת יאכטה</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+            background: #1a1a1a;
+            min-height: 100vh;
+            padding: 20px 10px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: white;
+            text-align: center;
+            margin-bottom: 10px;
+            font-size: 28px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .progress-bar {
+            background: rgba(255,255,255,0.2);
+            border-radius: 20px;
+            height: 30px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background: #4FC3F7;
+            height: 100%;
+            width: 0%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 14px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+            min-width: 40px;
+        }
+
+        .category {
+            background: #2a2a2a;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow: hidden;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .category-header {
+            background: #333333;
+            color: #4FC3F7;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+
+        .category-header:hover {
+            background: #3a3a3a;
+        }
+
+        .arrow {
+            transition: transform 0.3s;
+            font-size: 20px;
+        }
+
+        .arrow.open {
+            transform: rotate(180deg);
+        }
+
+        .category-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .category-content.open {
+            max-height: 2000px;
+        }
+
+        .checklist-item {
+            padding: 15px;
+            border-bottom: 1px solid #333333;
+            display: flex;
+            align-items: center;
+            transition: background-color 0.2s;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .checklist-item:hover {
+            background-color: #333333;
+        }
+
+        .checklist-item:last-child {
+            border-bottom: none;
+        }
+
+        .checkbox-wrapper {
+            position: relative;
+            margin-left: 15px;
+            flex-shrink: 0;
+        }
+
+        .checkbox {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #4FC3F7;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            background: transparent;
+        }
+
+        .checkbox.checked {
+            background: #4FC3F7;
+            border-color: #4FC3F7;
+            animation: checkAnimation 0.3s ease;
+        }
+
+        @keyframes checkAnimation {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .checkmark {
+            color: white;
+            font-size: 18px;
+            display: none;
+        }
+
+        .checkbox.checked .checkmark {
+            display: block;
+        }
+
+        .item-text {
+            flex: 1;
+            font-size: 15px;
+            color: #e0e0e0;
+            line-height: 1.4;
+        }
+
+        .item-text.checked {
+            text-decoration: line-through;
+            color: #808080;
+        }
+
+        .reset-button {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+            box-shadow: 0 5px 15px rgba(244, 67, 54, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .reset-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 20px rgba(244, 67, 54, 0.4);
+        }
+
+        .stats {
+            background: #2a2a2a;
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 20px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+
+        .stats-text {
+            font-size: 16px;
+            color: #4FC3F7;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📋 רשימת בדיקה - השכרת יאכטה</h1>
+        
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressFill">0%</div>
+        </div>
+
+        <div class="stats">
+            <div class="stats-text" id="statsText">0 מתוך 0 פריטים הושלמו</div>
+        </div>
+
+        <div id="checklistContainer"></div>
+        
+        <button class="reset-button" onclick="resetChecklist()">🔄 איפוס רשימה</button>
+    </div>
+
+    <script>
+        const checklistData = [
+            {
+                category: "בדיקה כללית חיצונית",
+                items: [
+                    "צילום כל פגם שהתגלה בגוף הספינה ובתוכה",
+                    "בדיקת פגיעות ושריטות לאורך הגוף, החרטום ופינות הירכתיים",
+                    "בדיקת יציבות ושלמות עמודי הריילינג ומתיחות הכבל",
+                    "ספירת פנדרים וווידוא תקינות הקשר לריילינג",
+                    "דו״ח צוללן מההפלגה הקודמת - תחתית היאכטה"
+                ]
+            },
+            {
+                category: "פנים היאכטה",
+                items: [
+                    "בדיקת האצ׳ים - אטימות וזיהוי סדקים או שברים",
+                    "סריקת נזקים בארונות, קירות, פגיעות בפאיולים ודלתות",
+                    "בדיקת משטחי המטבח ושלמות הגאנג־ווי",
+                    "הפעלת המקרר לבדיקת קירור",
+                    "זיהוי וספירת כל הפתחים מתחת לפני המים (סיקוקים)"
+                ]
+            },
+            {
+                category: "מנוע",
+                items: [
+                    "בדיקת נוזלים - שמן, מים, שעון דלק",
+                    "בדיקת רצועות - שלמות והמתח שלהן",
+                    "מיקום פתח מילוי דלק בסיפון",
+                    "מיקום ברז הדלק ושיטת הפריימינג",
+                    "אפשרויות הדממה בחרום",
+                    "ניתוק טעינה ממתח חוף והתנעה",
+                    "בדיקת פליטת מי ים",
+                    "בדיקת נזילות ורעידות",
+                    "בדיקת מתח המצברים",
+                    "זיהוי מיקום משאבת מי הים (ג׳בסקו) ופילטר"
+                ]
+            },
+            {
+                category: "מערכת העוגן",
+                items: [
+                    "בדיקת שלמות חיבור העוגן לשרשרת ולספינה",
+                    "הימצאות מיתר אבטחת העוגן",
+                    "בדיקת הכננת - הורדה והרמה ללא הכנסה למים",
+                    "מיקום מפסק העומס יתר",
+                    "בירור אורך השרשרת/חבל והחלוקה ביניהם",
+                    "הימצאות ידית הורדה ידנית ושיטת התפעול",
+                    "בקטמרן - חבל משולש למניעת חיכוך עם החרטום"
+                ]
+            },
+            {
+                category: "מצברים וחשמל",
+                items: [
+                    "זיהוי מיקום מצברי מנוע, צרכנים, עוגן וחרטומן",
+                    "בדיקת טעינה ממתח חוף, מנוע ופאנלים סולאריים",
+                    "בדיקת מצברי צרכנים בעומס - הפעלת כל הצרכנים",
+                    "מיקום מפסקי החשמל הראשיים למנוע ולצרכנים"
+                ]
+            },
+            {
+                category: "משאבות",
+                items: [
+                    "משאבות שיפוליים - מיקום ובדיקת מצב",
+                    "בדיקת מצוף אוטומטי והפעלה מהלוח",
+                    "משאבות מים מתוקים - מטבח, שירותים, מקלחת",
+                    "משאבות ניקוז מי מקלחות - בדיקת תפעול ושאיבה"
+                ]
+            },
+            {
+                category: "מיכלי מים מתוקים",
+                items: [
+                    "זיהוי כל פתחי המילוי על הסיפון",
+                    "הימצאות צינור מים, מחברים ומתאמים",
+                    "מיקום ברזי החלפת המיכלים",
+                    "בירור מקומות למילוי מים במסלול ההפלגה",
+                    "הפעלת דוד החשמל למקלחת"
+                ]
+            },
+            {
+                category: "ציוד בטיחות",
+                items: [
+                    "תיק עזרה ראשונה",
+                    "חגורות הצלה, רתמות בטיחות, רצועות חבל חיים",
+                    "גלגלי הצלה לפי הרשימה",
+                    "פירוטכניקה - מיקום ותוקף",
+                    "מטפים - מיקום ואופן הפעלה כולל מטפה אוטומטי",
+                    "הגה חרום - טילר",
+                    "תקינות סולם הירידה למים",
+                    "צופר",
+                    "משקפת",
+                    "פנס שגם דולק",
+                    "עוגן משני עם שרשרת וחבל מתאים"
+                ]
+            },
+            {
+                category: "אלקטרוניקה וניווט",
+                items: [
+                    "מד עומק - כיול ושיטת הגדרת התרעה",
+                    "GPS/צ׳ארטפלוטר - בדיקת דיוק, הכנסת נקודות, MOB",
+                    "VHF - בדיקת קשר מול מוביל הפלוטילה",
+                    "הגה אוטומטי - הפעלה, תיקוני קורס, שמירת כיוון",
+                    "הפעלת תאורת יום ולילה במכשירי ניווט",
+                    "בדיקת החרטומן (אם יש)",
+                    "תקינות ויציבות גלגל ההגה"
+                ]
+            },
+            {
+                category: "תאורה ולוח חשמל",
+                items: [
+                    "אורות ניווט, אור עגינה, אור סיפון",
+                    "אורות בקבינה, שירותים וסלון",
+                    "הכרות ותפעול לוח מפסקי החשמל",
+                    "יכולות טעינה - USB/AUX, שקע מצית"
+                ]
+            },
+            {
+                category: "בתי שימוש ומקלחות",
+                items: [
+                    "הפעלת משאבות הדחה ובדיקת סתימות",
+                    "זיהוי מיכלי הולדינג ומיקום ברז ריקון לים",
+                    "זיהוי פתחי שאיבה מהסיפון (Waste)",
+                    "הפעלת ברזי מים ואיתור דליפות",
+                    "הימצאות פחי אשפה בכל חדרי שירותים"
+                ]
+            },
+            {
+                category: "קבינות",
+                items: [
+                    "מפסקי הדלקה למנורות בקבינות",
+                    "הימצאות סטים של מצעים ומגבות כמספר הצוות",
+                    "בדיקת מאווררים ומנורות לילה"
+                ]
+            },
+            {
+                category: "מטבח",
+                items: [
+                    "הדלקת הכיריים - כל הלהבות דולקות",
+                    "הדלקת התנור - להבה דולקת לאורך זמן",
+                    "מיכל גז מלא והימצאות מיכל נוסף",
+                    "זיהוי מיקום ברזי הגז במטבח ובירכתיים",
+                    "בדיקת תקינות המקרר",
+                    "בדיקת כמות כלי אוכל לפי הרשימה"
+                ]
+            },
+            {
+                category: "שולחן הסקיפר",
+                items: [
+                    "פיילוט בוק של אזור ההפלגה",
+                    "מפות נייר של אזור ההפלגה",
+                    "סרגל, מחוגה, עיפרון, מחק, מחדד",
+                    "מצפן תכווינים",
+                    "מפתחות הנעילה ליאכטה",
+                    "תיק המסמכים מחברת ההשכרה",
+                    "בדיקת השוקע בתעודת הרישום"
+                ]
+            },
+            {
+                category: "סירת דינגי ומנוע חיצון",
+                items: [
+                    "בדיקת תקינות ולחץ אוויר, ניפוח במקרה הצורך",
+                    "הימצאות פקקים, משוטים, משאבת רגל וערכת תיקון",
+                    "בקטמרן - בדיקת תקינות זרועות ההרמה",
+                    "התנעת המנוע - ברז דלק, פקק נשם, צ׳וק, משבת ידני",
+                    "בדיקת כמות דלק והימצאות מיכל 5 ליטר מלא",
+                    "חבל אבטחה למנוע",
+                    "חבל קשירת הדינגי בחרטום הסירה"
+                ]
+            },
+            {
+                category: "מערך המפרשים",
+                items: [
+                    "זיהוי תפקיד כל המיתרים במערך",
+                    "פתיחת המפרשים ובדיקת שלמותם",
+                    "זיהוי שיטת צמצום - ראשי מתגלגל בתורן",
+                    "בדיקת רכיבים - שאקלים, גלגלות, ונטות, לייזי בג",
+                    "הימצאות מעלן ספינאקר אחד לפחות"
+                ]
+            },
+            {
+                category: "חבלים ומיתרים",
+                items: [
+                    "4 חבלי היקשרות - אחד באורך 50 מטר לחוף",
+                    "חבלי רתיקה ואיבטוח",
+                    "ספירת מיתרי אבטוח - נדרשים 2-3 מיתרים"
+                ]
+            },
+            {
+                category: "חלפים",
+                items: [
+                    "שמנים - גיר ומנוע",
+                    "מי קירור למנוע (מסופקים)",
+                    "מתאמי חשמל למתח חוף"
+                ]
+            }
+        ];
+
+        let checkedItems = {};
+        let totalItems = 0;
+
+        function initializeChecklist() {
+            const container = document.getElementById('checklistContainer');
+            container.innerHTML = '';
+            
+            checklistData.forEach((category, catIndex) => {
+                totalItems += category.items.length;
+                
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category';
+                categoryDiv.style.animationDelay = `${catIndex * 0.1}s`;
+                
+                const categoryHeader = document.createElement('div');
+                categoryHeader.className = 'category-header';
+                categoryHeader.innerHTML = `
+                    <span>${category.category}</span>
+                    <span class="arrow">▼</span>
+                `;
+                categoryHeader.onclick = () => toggleCategory(catIndex);
+                
+                const categoryContent = document.createElement('div');
+                categoryContent.className = 'category-content';
+                categoryContent.id = `category-${catIndex}`;
+                
+                category.items.forEach((item, itemIndex) => {
+                    const itemId = `${catIndex}-${itemIndex}`;
+                    
+                    const itemDiv = document.createElement('div');
+                    itemDiv.className = 'checklist-item';
+                    itemDiv.onclick = () => toggleItem(itemId);
+                    
+                    itemDiv.innerHTML = `
+                        <div class="checkbox-wrapper">
+                            <div class="checkbox" id="checkbox-${itemId}">
+                                <span class="checkmark">✓</span>
+                            </div>
+                        </div>
+                        <div class="item-text" id="text-${itemId}">${item}</div>
+                    `;
+                    
+                    categoryContent.appendChild(itemDiv);
+                });
+                
+                categoryDiv.appendChild(categoryHeader);
+                categoryDiv.appendChild(categoryContent);
+                container.appendChild(categoryDiv);
+            });
+            
+            // Load saved state
+            loadState();
+            updateProgress();
+        }
+
+        function toggleCategory(index) {
+            const content = document.getElementById(`category-${index}`);
+            const arrow = event.currentTarget.querySelector('.arrow');
+            
+            content.classList.toggle('open');
+            arrow.classList.toggle('open');
+        }
+
+        function toggleItem(itemId) {
+            const checkbox = document.getElementById(`checkbox-${itemId}`);
+            const text = document.getElementById(`text-${itemId}`);
+            
+            checkedItems[itemId] = !checkedItems[itemId];
+            
+            if (checkedItems[itemId]) {
+                checkbox.classList.add('checked');
+                text.classList.add('checked');
+            } else {
+                checkbox.classList.remove('checked');
+                text.classList.remove('checked');
+            }
+            
+            saveState();
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const checkedCount = Object.values(checkedItems).filter(v => v).length;
+            const percentage = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
+            
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = Math.max(percentage, 5) + '%';
+            progressFill.textContent = percentage + '%';
+            document.getElementById('statsText').textContent = 
+                `${checkedCount} מתוך ${totalItems} פריטים הושלמו`;
+        }
+
+        function saveState() {
+            localStorage.setItem('yachtChecklist', JSON.stringify(checkedItems));
+        }
+
+        function loadState() {
+            const saved = localStorage.getItem('yachtChecklist');
+            if (saved) {
+                checkedItems = JSON.parse(saved);
+                Object.keys(checkedItems).forEach(itemId => {
+                    if (checkedItems[itemId]) {
+                        const checkbox = document.getElementById(`checkbox-${itemId}`);
+                        const text = document.getElementById(`text-${itemId}`);
+                        if (checkbox && text) {
+                            checkbox.classList.add('checked');
+                            text.classList.add('checked');
+                        }
+                    }
+                });
+            }
+        }
+
+        function resetChecklist() {
+            if (confirm('האם אתה בטוח שברצונך לאפס את כל הרשימה?')) {
+                checkedItems = {};
+                localStorage.removeItem('yachtChecklist');
+                
+                document.querySelectorAll('.checkbox').forEach(cb => {
+                    cb.classList.remove('checked');
+                });
+                document.querySelectorAll('.item-text').forEach(text => {
+                    text.classList.remove('checked');
+                });
+                
+                updateProgress();
+            }
+        }
+
+        // Initialize on load
+        document.addEventListener('DOMContentLoaded', initializeChecklist);
+    </script>
+</body>
+</html>
