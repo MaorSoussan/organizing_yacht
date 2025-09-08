@@ -517,10 +517,11 @@
 
         function updateProgress() {
             const checkedCount = Object.values(checkedItems).filter(v => v).length;
-            const percentage = Math.round((checkedCount / totalItems) * 100);
+            const percentage = totalItems > 0 ? Math.round((checkedCount / totalItems) * 100) : 0;
             
-            document.getElementById('progressFill').style.width = percentage + '%';
-            document.getElementById('progressFill').textContent = percentage + '%';
+            const progressFill = document.getElementById('progressFill');
+            progressFill.style.width = Math.max(percentage, 5) + '%';
+            progressFill.textContent = percentage + '%';
             document.getElementById('statsText').textContent = 
                 `${checkedCount} מתוך ${totalItems} פריטים הושלמו`;
         }
